@@ -6,9 +6,9 @@ export const arcjetProtection = async (req, res, next) => {
     try {
 
         //✅ ADD THIS HERE (TOP)
-        if (ENV.NODE_ENV === "development") {
-            return next();
-        }
+        //if (ENV.NODE_ENV === "development") {
+        //    return next();
+        //}
         
         const decision = await aj.protect(req)
 
