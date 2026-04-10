@@ -1,5 +1,4 @@
 import express from 'express';
-import dotenv from 'dotenv';
 import path from 'path';
 import cookieParser from 'cookie-parser';
 import cors from 'cors';
@@ -14,14 +13,13 @@ const __dirname = path.resolve();
 
 const PORT = ENV.PORT || 3000;
 
-app.use(express.json()); // req.body
-app.use(cors({ origin: ENV.CLIENT_URL, credentials: true })); // allow cookies from frontend
-app.use(cookieParser()); // req.cookies
+app.use(express.json({ limit: "50mb" })); // ✅ increased from 10mb to 50mb
+app.use(cors({ origin: ENV.CLIENT_URL, credentials: true }));
+app.use(cookieParser());
 
 app.use("/api/auth", authRoutes);
 app.use("/api/messages", messageRoutes);
 
-//make ready for deployment
 if (ENV.NODE_ENV === "production") {
     app.use(express.static(path.join(__dirname, "../frontend/dist")))
     app.get("*", (_, res) => {
