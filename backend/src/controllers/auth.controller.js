@@ -17,7 +17,6 @@ export const signup = async (req, res) => {
             return res.status(400).json({ message: "Password must be at least 6 characters" })
         }
 
-        // check if email is valid: regex
         const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
         if (!emailRegex.test(email)) {
             return res.status(400).json({ message: "Invalid email format" })
@@ -38,28 +37,21 @@ export const signup = async (req, res) => {
         })
 
         if (newUser) {
-            //before CR:
-            //generateToken(newUser._id, res);
-            //await newUser.save()
-
-            //after CR:
-            //Persisit user first, then issue with cookie
             const savedUser = await newUser.save();
             generateToken(savedUser._id, res);
 
-             res.status(201).json({
-                 _id: newUser._id,
-                 fullName: newUser.fullName,
-                 email: newUser.email,
-                 profilePic: newUser.profilePic,
-                });
+            res.status(201).json({
+                _id: newUser._id,
+                fullName: newUser.fullName,
+                email: newUser.email,
+                profilePic: newUser.profilePic,
+            });
 
-             try {
-                await sendWelcomeEmail(savedUser.email, savedUser.fullName, ENV.CLIENT_URL);   
-                } catch (error) {
-                    console.error("Error sending welcome email:", error);
-                }
-
+            try {
+                await sendWelcomeEmail(savedUser.email, savedUser.fullName, ENV.CLIENT_URL);
+            } catch (error) {
+                console.error("Error sending welcome email:", error);
+            }
 
         } else {
             res.status(400).json({ message: "Invalid user data" })
@@ -80,7 +72,6 @@ export const login = async (req, res) => {
     try {
         const user = await User.findOne({ email });
         if (!user) return res.status(400).json({ message: "Invalid credentials" });
-        // never tell the user if email or password is wrong, just say invalid credentials
 
         const isPasswordCorrect = await bcrypt.compare(password, user.password);
         if (!isPasswordCorrect) return res.status(400).json({ message: "Invalid credentials" });
@@ -111,18 +102,20 @@ export const updateProfile = async (req, res) => {
 
         const userId = req.user._id;
 
-        const uploadResponse =await cloudinary.uploader.upload(profilePic)
+        // ✅ FIXED: real Cloudinary upload with resource_type auto
+        const uploadResponse = await cloudinary.uploader.upload(profilePic, {
+            resource_type: "auto",
+        });
 
         const updatedUser = await User.findByIdAndUpdate(
-            userId, 
-            { profilePic: uploadResponse.secure_url }, 
+            userId,
+            { profilePic: uploadResponse.secure_url },
             { new: true }
-        )
+        );
 
-        res.status(200).json(updatedUser)
+        res.status(200).json(updatedUser);
     } catch (error) {
         console.error("Error in update Profile", error);
         res.status(500).json({ message: "Internal server error" });
     }
 };
-    
