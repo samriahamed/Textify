@@ -1,4 +1,4 @@
-import { useEffect } from "react";
+import { useEffect, useRef } from "react";
 import { useAuthStore } from "../store/useAuthStore";
 import { useChatStore } from "../store/useChatStore";
 import ChatHeader from "./ChatHeader";
@@ -54,8 +54,7 @@ function ChatContainer() {
                   </div>
                 </div>
                     ))}
-
-                    <div ref={MessageEndRef}/> //scroll traget
+                    <div ref={messageEndRef}/>
           </div>
         ) : isMessagesLoading ? (
         <MessagesLoadingSkeleton/>
